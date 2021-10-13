@@ -1,0 +1,4 @@
+{
+  "cmd": "ls -l -a -h",
+  "nonce": "123xyz"
+}
