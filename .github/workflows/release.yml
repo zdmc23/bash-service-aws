@@ -7,29 +7,29 @@ on:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REGISTRY: ${{ secrets.ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
+  REGISTRY: ${{ secrets.ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Authenticate Docker to AWS ECR
+    - name: Authenticate Docker to Registry
       id: authenticate-docker 
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
-        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY 
+        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY 
     - name: Build, Tag, and Push Image to AWS ECR
       id: build-image
       env:
-        ECR_REPOSITORY: ${{ github.event.repository.name }}
+        IMAGE_REPO: ${{ github.event.repository.name }}
         IMAGE_TAG: ${{ github.ref }} #github.sha }}
-        ECR_TAG: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        TAGGED_IMAGE: $REGISTRY/$IMAGE_REPO:$IMAGE_TAG
       run: |
-        docker build -t $ECR_TAG .
-        docker push $ECR_TAG
+        docker build -t $TAGGED_IMAGE .
+        docker push $TAGGED_IMAGE
     - name: Publish Release
       id: publish-release
       uses: actions/create-release@v1
